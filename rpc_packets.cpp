@@ -23,11 +23,11 @@ uint8_t  vxi_send_buffer[VXI_SEND_SIZE];      // only for vxi responses
   This function is called only when the udp connection has
   data available. It reads the data into the udp_read_buffer.
 
-  @param  udp		The WiFiUDP connection from which to read.
+  @param  udp		The UDP connection from which to read.
 
   @return The length of data received.
 */
-uint32_t get_bind_packet ( WiFiUDP & udp )
+uint32_t get_bind_packet ( NetUDP & udp )
 {
   uint32_t  len = udp.read(udp_request_packet_buffer, UDP_READ_SIZE);
 
@@ -45,11 +45,11 @@ uint32_t get_bind_packet ( WiFiUDP & udp )
   This function is called only when the tcp client has data
   available. It reads the data into the tcp_read_buffer.
 
-  @param  tcp   The WiFiClient connection from which to read.
+  @param  tcp   The TCP connection from which to read.
   
   @return The length of data received.
 */
-uint32_t get_bind_packet ( WiFiClient & tcp )
+uint32_t get_bind_packet ( NetClient & tcp )
 {
   uint32_t  len;
 
@@ -77,11 +77,11 @@ uint32_t get_bind_packet ( WiFiClient & tcp )
   This function is called only when the tcp client has data
   available. It reads the data into the vxi_read_buffer.
 
-  @param  tcp   The WiFiClient connection from which to read.
+  @param  tcp   The TCP connection from which to read.
   
   @return The length of data received.
 */
-uint32_t get_vxi_packet ( WiFiClient & tcp )
+uint32_t get_vxi_packet ( NetClient & tcp )
 {
   uint32_t  len;
 
@@ -112,7 +112,7 @@ uint32_t get_vxi_packet ( WiFiClient & tcp )
   @param  udp   The udp connection on which to send.
   @param  len	  The length of the response to send.
 */
-void send_bind_packet ( WiFiUDP & udp, uint32_t len )
+void send_bind_packet ( NetUDP & udp, uint32_t len )
 {
   fill_response_header(udp_response_packet_buffer, udp_request->xid);  // get the xid from the request
 
@@ -130,10 +130,10 @@ void send_bind_packet ( WiFiUDP & udp, uint32_t len )
   This function is called to return the port number on which
   the VXI_Server is listening. It uses the tcp_send_buffer.
 
-  @param  tcp		The WiFiClient to which to send.
+  @param  tcp		The TCP client to which to send.
   @param  len		The length of the response to send.
 */
-void send_bind_packet ( WiFiClient & tcp, uint32_t len )
+void send_bind_packet ( NetClient & tcp, uint32_t len )
 {
   fill_response_header(tcp_response_packet_buffer, tcp_request->xid);  // get the xid from the request
 
@@ -162,10 +162,10 @@ void send_bind_packet ( WiFiClient & tcp, uint32_t len )
   include additional data as appropriate. It uses the
   vxi_send_buffer.
 
-  @param  tcp		The WiFiClient to which to send.
+  @param  tcp		The TCP client to which to send.
   @param  len		The length of the response to send.
 */
-void send_vxi_packet ( WiFiClient & tcp, uint32_t len )
+void send_vxi_packet ( NetClient & tcp, uint32_t len )
 {
   fill_response_header(vxi_response_packet_buffer, vxi_request->xid);
 

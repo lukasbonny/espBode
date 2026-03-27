@@ -9,6 +9,7 @@
 #include "utilities.h"
 #include "Streaming.h"
 #include "debug.h"
+#include "awg_serial.h"
 
 /*!
   @brief  Letters used to indicate FeelTech parameters.
@@ -85,7 +86,7 @@ bool AWG_FY::set ( uint32_t channel, uint32_t param_id, double value )
 
   do
   {
-    Serial << command;
+    AWGSerial << command;
     Debug.Serial_IO() << command;
   
     switch ( pt[param_id].set_type )
@@ -100,12 +101,12 @@ bool AWG_FY::set ( uint32_t channel, uint32_t param_id, double value )
 
         if ( width )
         {
-          Serial << _WIDTH((long int)(set_value), width);
+          AWGSerial << _WIDTH((long int)(set_value), width);
           Debug.Serial_IO() << _WIDTH((long int)(set_value), width);
         }
         else
         {
-          Serial << (long int)(set_value);
+          AWGSerial << (long int)(set_value);
           Debug.Serial_IO() << (long int)(set_value);
         }
 
@@ -115,17 +116,17 @@ bool AWG_FY::set ( uint32_t channel, uint32_t param_id, double value )
 
         if ( width )
         {
-          Serial << _WIDTH(_FLOAT(set_value,precision),width);
+          AWGSerial << _WIDTH(_FLOAT(set_value,precision),width);
           Debug.Serial_IO() << _WIDTH(_FLOAT(set_value,precision),width);
         }
         else if ( precision )
         {
-          Serial << _FLOAT(set_value,precision);
+          AWGSerial << _FLOAT(set_value,precision);
           Debug.Serial_IO() << _FLOAT(set_value,precision);
         }
         else
         {
-          Serial << set_value;
+          AWGSerial << set_value;
           Debug.Serial_IO() << set_value;
         }
 
@@ -136,7 +137,7 @@ bool AWG_FY::set ( uint32_t channel, uint32_t param_id, double value )
         break;
     }
 
-    Serial << "\n";     // complete the line
+    AWGSerial << "\n";     // complete the line
     Debug.Serial_IO() << "\n";
 
     /*  wait for the AWG to respond (it should send back a single '\n')
@@ -181,14 +182,14 @@ double AWG_FY::get ( uint32_t channel, uint32_t param_id )
 
   p10 = pow10(pt[param_id].get_exponent);
 
-  Serial << command << "\n";
+  AWGSerial << command << "\n";
   Debug.Serial_IO() << command << "\n";
 
   // wait until the AWG responds
 
   wait_for_serial();
 
-  len = Serial.readBytesUntil('\n', response, awg_response_length);
+  len = AWGSerial.readBytesUntil('\n', response, awg_response_length);
 
   response[len] = 0;
 

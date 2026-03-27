@@ -3,17 +3,18 @@
   @brief  Main file of espBode on Arduino IDE
 */
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
-#include "ESPTelnet.h"
+#include <SPI.h>
+#include <Ethernet.h>
+#include <EthernetUdp.h>
 #include "Streaming.h"
-#include "wifi_config.h"
-#include "credentials.h"
+#include "eth_config.h"
 #include "debug.h"
 #include "rpc_bind_server.h"
 #include "vxi_server.h"
 #include "telnet_server.h"
 #include "awg_fy6900.h"
+#include "awg_serial.h"
+#include "awg_serial_config.h"
 
 // global variables
 
@@ -23,59 +24,41 @@ RPC_Bind_Server rpc_bind_server(vxi_server);  ///< The RPC_Bind_Server
 Telnet_Server   telnet_server;                ///< The Telnet_Server
 
 /*!
-  @brief  Set up the WiFi connection.
+  @brief  Set up the Ethernet (W5500 over SPI) connection.
 
-  The WiFi setup is separated out from the rest of the setup()
-  routine just to keep the latter from being too cluttered. Note
-  that this function blocks until the WiFi connection is
-  successfully established; in other words, the ESP-01 will
-  be completely unresponsive if no WiFi connection is made.
+  Ethernet setup is separated out from the rest of the setup()
+  routine just to keep the latter from being too cluttered.
 */
-void setup_WiFi ()
+static void setup_Ethernet ()
 {
-  /*  The initial part of this function represents most of
-      the code that has been carried over from the original
-      espBode project with minimal modifications.
-  */
-
-  #if defined(STATIC_IP)
-    IPAddress ip(ESP_IP);
-    IPAddress mask(ESP_MASK);
-    IPAddress gateway(ESP_GW);
-    WiFi.config(ip, gateway, mask);
-  #endif
-
-  #if defined(WIFI_MODE_CLIENT)
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_PSK);      // note: SSID and PSK are stored in credentials.h
-  #elif defined(WIFI_MODE_AP)
-    WiFi.softAP(WIFI_SSID, WIFI_PSK);     // note: SSID and PSK are stored in credentials.h
-  #else
-    #error PLEASE SELECT WIFI_MODE_AP OR WIFI_MODE_CLIENT!
-  #endif
-
-  while (WiFi.status() != WL_CONNECTED)
+  if (ETH_RST >= 0)
   {
-
-    #ifdef USE_LED
-      digitalWrite(LED_BUILTIN, ! digitalRead(LED_BUILTIN));    // LED will blink slowly while attempting to connect
-    #endif
-
-    if ( Debug.Channel() == DEBUG::VIA_SERIAL )   // Telnet is not yet available, so only use Debug if sent to Serial
-    {
-      Debug.Progress() << ". ";
-    }
-
-    delay(500);   // Wait 1/2 second before trying again
+    pinMode(ETH_RST, OUTPUT);
+    digitalWrite(ETH_RST, LOW);
+    delay(50);
+    digitalWrite(ETH_RST, HIGH);
+    delay(200);
   }
 
-  if ( Debug.Channel() == DEBUG::VIA_SERIAL )     // Telnet is still not yet available, so only use Debug if sent to Serial
+  SPI.begin(ETH_SPI_SCK, ETH_SPI_MISO, ETH_SPI_MOSI, ETH_CS);
+  Ethernet.init(ETH_CS);
+
+  #ifdef STATIC_IP
+    Ethernet.begin((uint8_t*)ETH_MAC, ESP_IP, ETH_DNS, ESP_GW, ESP_MASK);
+  #else
+    Ethernet.begin((uint8_t*)ETH_MAC);
+  #endif
+
+  // Some W5500 modules need a moment after begin()
+  delay(250);
+
+  if ( Debug.Channel() == DEBUG::VIA_SERIAL )
   {
-    Debug.Progress() << "\nWiFi connected; IP address = " << WiFi.localIP().toString() << "; MAC address = " << WiFi.macAddress() << "\n\n";
+    Debug.Progress() << "\nEthernet up; IP address = " << Ethernet.localIP().toString() << "\n\n";
   }
 
   #ifdef USE_LED
-    blink(5,100);               // blink the LED 5 times quickly to confirm connection
+    blink(5,100);
   #endif
 }
 
@@ -87,7 +70,11 @@ void setup_WiFi ()
 */
 void setup()
 {
-    Serial.begin(awg.baud_rate());
+    // USB console (optional). Keep separate from the AWG UART.
+    Serial.begin(115200);
+
+    // Dedicated UART for the AWG/instrument.
+    AWGSerial.begin(awg.baud_rate(), AWG_SERIAL_MODE, AWG_RX_PIN, AWG_TX_PIN);
 
     #ifdef USE_LED
       pinMode(LED_BUILTIN, OUTPUT);
@@ -116,16 +103,7 @@ void setup()
       only if Debug is specifically set to output to serial.
   */
 
-  if ( Debug.Channel() == DEBUG::VIA_SERIAL )
-  {
-    Debug.Progress() << "Connecting to " << WIFI_SSID << " ";
-  }
-
-  /*  Initiate the WiFi connection. Note that this function
-      will block until the connection is established.
-  */
-
-  setup_WiFi();
+  setup_Ethernet();
 
   /*  Initiailize the various servers - telnet_server,
       rpc_bind_server, and vxi_server.

@@ -51,7 +51,7 @@ void VXI_Server::begin ( bool bNext )
     vxi_port++;
   }
   
-  tcp_server.begin(vxi_port);
+  tcp_server.begin((uint16_t)vxi_port);
 
   Debug.Progress() << "\nListening for VXI commands on TCP port " << vxi_port << "\n";
 }

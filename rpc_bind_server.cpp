@@ -65,7 +65,7 @@ void RPC_Bind_Server::loop ()
     }
     else
     {
-      WiFiClient  tcp_client;
+      NetClient  tcp_client;
 
       tcp_client = tcp.accept();
     

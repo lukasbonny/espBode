@@ -6,8 +6,7 @@
   @brief  Declares the RPC_Bind_Server class
 */
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+#include "net_compat.h"
 #include "vxi_server.h"
 #include "utilities.h"
 
@@ -60,8 +59,8 @@ class RPC_Bind_Server {
     void  process_request ( bool onUDP );
 
     VXI_Server &    vxi_server;   ///< Reference to the VXI_Server
-    WiFiUDP         udp;          ///< UDP server
-    WiFiServer_ext  tcp;          ///< TCP server
+    NetUDP          udp;          ///< UDP server
+    NetServer_ext   tcp;          ///< TCP server
 
 };
 

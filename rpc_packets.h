@@ -7,8 +7,7 @@
           receive and send RPC/VXI packets.
 */
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+#include "net_compat.h"
 #include "utilities.h"
 
 /*  The get functions take the connection (UDP or TCP client),
@@ -16,18 +15,18 @@
     received and stored in the data_buffer.
 */
 
-uint32_t get_bind_packet ( WiFiUDP & udp );
-uint32_t get_bind_packet ( WiFiClient & tcp );
-uint32_t get_vxi_packet ( WiFiClient & tcp );
+uint32_t get_bind_packet ( NetUDP & udp );
+uint32_t get_bind_packet ( NetClient & tcp );
+uint32_t get_vxi_packet ( NetClient & tcp );
 
 /*  The send functions take the connection (UDP or TCP client)
     and the length of the data to send; they send the data
     and return void.
 */
 
-void send_bind_packet ( WiFiUDP & udp, uint32_t len );
-void send_bind_packet ( WiFiClient & tcp, uint32_t len );
-void send_vxi_packet ( WiFiClient & tcp, uint32_t len );
+void send_bind_packet ( NetUDP & udp, uint32_t len );
+void send_bind_packet ( NetClient & tcp, uint32_t len );
+void send_vxi_packet ( NetClient & tcp, uint32_t len );
 
 /*  The send functions call on fill_response_header to generate
     the "generic" data used in all responses.
@@ -88,7 +87,7 @@ uint8_t * const vxi_response_packet_buffer  = vxi_send_buffer + 4;  ///< The pac
     message, status, error, and other codes.
 
     Helpful information on the structure of the basic RPC packet is available
-    at https://www.ibm.com/docs/it/aix/7.2?topic=concepts-remote-procedure-call.
+  at https://www.ibm.com/docs/it/aix/7.2?topic=concepts-remote-procedure-call.
     For information on the VXI specific packets, see the VXIbus TCP/IP Instrument
     Protocol Specification at https://vxibus.org/specifications.html.
 */

@@ -1,8 +1,7 @@
 #ifndef VXI_SERVER_H
 #define VXI_SERVER_H
 
-#include <ESP8266WiFi.h>
-#include "wifi_ext.h"
+#include "net_compat.h"
 #include "utilities.h"
 #include "awg_server.h"
 
@@ -49,8 +48,8 @@ class VXI_Server {
     void  process_parameters ( char * parameter_context );
     int   get_id ( const char * id_text, const char * const id_list[], size_t id_cnt );
 
-    WiFiServer_ext  tcp_server;
-    WiFiClient      client;
+    NetServer_ext  tcp_server;
+    NetClient      client;
     Read_Type       read_type;
     uint32_t        rw_channel;
     cyclic_uint32_t vxi_port;

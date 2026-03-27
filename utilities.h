@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include "Streaming.h"
+#include "awg_serial.h"
 
 #ifdef USE_LED
 
@@ -36,15 +37,15 @@ inline void wait_for_serial ( bool b_consume = false )
 {
   // wait until something is available
 
-  while ( ! Serial.available() );
+  while ( ! AWGSerial.available() );
 
   // if b_consume is set, clear the Serial input
 
   if ( b_consume )
   {
-    while ( Serial.available() )
+    while ( AWGSerial.available() )
     {
-      Serial.read();
+      AWGSerial.read();
     }
   }
 }
