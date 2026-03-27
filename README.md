@@ -1,5 +1,9 @@
 @mainpage espBode v2.0
 
+This Fork adapted the code to run on ESP32 instead of 8266. Also changed from WiFi to Ethernet using a W5500 Ethernet SPI Adapter.
+Made to work with the <1.4 Software version of the FY6900. This is only affacting the scale factor of the send command. Changed from 1 to 10.
+Also added a confirmation when connected to Telnet.
+
 # espBode v2.0
 
 Connects a Siglent oscilloscope (e.g., SDS804X-HD) to a non-Siglent AWG (e.g., FY6900) to run Bode plots.
